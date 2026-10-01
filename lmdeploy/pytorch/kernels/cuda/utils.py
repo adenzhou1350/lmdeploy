@@ -57,7 +57,10 @@ def supports_tma(device=None):
 
     return get_device_props(device)['compute_capability'][0] >= 9
 
-@functools.lru_cache
-def supports_pdl():
-    """Whether Triton programmatic dependent launch is available."""
-    return is_cuda() and torch.cuda.get_device_capability()[0] >= 9
+def supports_pdl(device: int | None = None) -> bool:
+    """Whether PDL is available on the given CUDA device index."""
+    if not is_cuda():
+        return False
+    if device is None:
+        device = torch.cuda.current_device()
+    return get_device_props(device)['compute_capability'][0] >= 9

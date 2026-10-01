@@ -140,7 +140,7 @@ def _quant_fp8_launcher(A: Tensor,
     assert grid_size1 < 65536
     num_stages = min(4, max(1, triton.cdiv(M_out, grid_size1)))
     grid = (grid_size0, grid_size1)
-    use_pdl = launch_pdl and supports_pdl()
+    use_pdl = launch_pdl and supports_pdl(A.device.index)
     _quant_fp8_kernel[grid](
         A,
         out,
