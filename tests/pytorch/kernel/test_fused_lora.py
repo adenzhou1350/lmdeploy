@@ -23,8 +23,8 @@ class TestFusedLoRA:
         yield torch.tensor(request.param).cuda()
 
     @pytest.fixture
-    def ranks(self):
-        yield torch.tensor([2, 4]).cuda()
+    def ranks(self, request):
+        yield torch.tensor(request.param).cuda()
 
     @pytest.fixture
     def start_loc(self, seq_lens):
@@ -87,10 +87,15 @@ class TestFusedLoRA:
         (2, 4, 6, 8),
         (1, 1, 1, 1),
     ], indirect=True)
-    def test_fused_lora(self, input, fused_lora_a, fused_lora_b, start_loc, seq_lens, adapter_ids, scaling, ranks, gt):
+    @pytest.mark.parametrize('ranks', [(2, 4), (16, 32), (16, 24), (24, 33), (0, 24)], indirect=True)
+    @pytest.mark.parametrize('cum', [False, True])
+    def test_fused_lora(self, input, fused_lora_a, fused_lora_b, start_loc, seq_lens, adapter_ids, scaling, ranks, gt,
+                        cum):
         max_seq_len = max(seq_lens).item()
         max_rank = max(ranks).item()
         rank_offset = ranks.cumsum(0) - ranks
+        base_output = torch.rand_like(gt) if cum else None
+        expected = base_output + gt if cum else gt
 
         output = fused_lora(
             input,
@@ -104,6 +109,8 @@ class TestFusedLoRA:
             adapter_ids=adapter_ids,
             max_rank=max_rank,
             max_seqlen=max_seq_len,
+            output=base_output,
+            cum=cum,
         )
 
-        torch.testing.assert_close(gt, output)
+        torch.testing.assert_close(expected, output)

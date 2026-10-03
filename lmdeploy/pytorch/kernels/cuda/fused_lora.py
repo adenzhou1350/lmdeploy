@@ -170,7 +170,7 @@ def fused_lora(input: torch.Tensor,
         assert output.size(0) == M
         assert output.size(1) == N
 
-    BLOCK_SIZE_R = max(16, max_rank)
+    BLOCK_SIZE_R = max(16, triton.next_power_of_2(max_rank))
     _fused_lora_kernel[grid](
         input,
         lora_a,
