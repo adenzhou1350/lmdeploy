@@ -82,7 +82,7 @@ def _build_tp_group_impl(tp: int,
     assert tp > 1
     tp_rank = rank % tp
     tp_group_id = rank // tp
-    gather_group_id = (rank - tp_group_id * tp) % attn_tp
+    gather_group_id = tp_group_id * attn_tp + tp_rank % attn_tp
     ranks = range(world_size)
     tp_gpu_groups = []
     tp_cpu_groups = []
