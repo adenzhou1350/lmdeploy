@@ -618,7 +618,7 @@ class HistoryMultiModals:
         if len(self.multimodals) == 0:
             return True
 
-        return all(len(vals) == 0 for vals in self.multimodals)
+        return all(len(vals) == 0 for vals in self.multimodals.values())
 
     @staticmethod
     def update_multimodals(input_mms: MultiModalInputs, prev_len: int):
