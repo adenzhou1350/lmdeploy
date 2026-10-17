@@ -9,6 +9,28 @@ from lmdeploy.serve.openai.protocol import ChatCompletionRequest
 from lmdeploy.utils import get_hf_gen_cfg
 
 
+@pytest.mark.parametrize(
+    ('bad_token_ids', 'stop_token_ids', 'ignore_eos'),
+    [([7], [1], True), (None, [1], True), ([], [1], True), ([7], None, True), ([7], [1], False)],
+    ids=['bad-and-stop', 'no-bad', 'empty-bad', 'no-stop', 'keep-stop'],
+)
+def test_sampling_param_conversion_preserves_token_lists(bad_token_ids, stop_token_ids, ignore_eos):
+    config = GenerationConfig(bad_token_ids=bad_token_ids, stop_token_ids=stop_token_ids, ignore_eos=ignore_eos)
+    original_bad = None if bad_token_ids is None else bad_token_ids.copy()
+    original_stop = None if stop_token_ids is None else stop_token_ids.copy()
+    expected_bad = list(original_bad or [])
+    if ignore_eos:
+        expected_bad += original_stop or []
+
+    first = SamplingParam.from_gen_config(config)
+    second = SamplingParam.from_gen_config(config)
+
+    assert config.bad_token_ids == original_bad
+    assert config.stop_token_ids == original_stop
+    assert first.bad_words == second.bad_words == expected_bad
+    assert first.stop_words == second.stop_words == ([] if ignore_eos else original_stop or [])
+
+
 def test_generation_config_repetition_ngram_clamped():
     c = GenerationConfig(repetition_ngram_size=-1, repetition_ngram_threshold=-2)
     assert c.repetition_ngram_size == 0
