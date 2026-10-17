@@ -542,7 +542,8 @@ class PytorchEngineConfig:
         language_model_only: Whether to run as text-only LLM without loading
             vision/multimodal encoder modules. Default to False.
         logprobs_mode: The mode of logprob, options: ['raw_logits', 'raw_logprobs']
-        dllm_block_length: Block size of block diffusion model.
+        dllm_block_length: Block size of block diffusion model. When specified,
+            must be positive and not exceed max_prefill_token_num.
         dllm_unmasking_strategy: Dllm unmasking strategy, options:
             ['low_confidence_dynamic', 'low_confidence_static', 'sequential'].
         dllm_denoising_steps: Dllm denoising steps.

@@ -40,6 +40,9 @@ class ConfigBuilder:
 
         if engine_config.dllm_block_length is not None:
             max_prefill_token_num = engine_config.max_prefill_token_num
+            if not 0 < engine_config.dllm_block_length <= max_prefill_token_num:
+                raise ValueError(f'dllm_block_length ({engine_config.dllm_block_length}) must be positive and '
+                                 f'<= max_prefill_token_num ({max_prefill_token_num})')
             max_batch_size = engine_config.max_batch_size
             if max_batch_size * engine_config.dllm_block_length > max_prefill_token_num:
                 engine_config.max_batch_size = max_prefill_token_num // engine_config.dllm_block_length
